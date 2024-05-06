@@ -1,13 +1,17 @@
-import { Diagnose, Patient } from "@/types";
+import { Diagnose, Entry, NewEntry, Patient } from "@/types";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import patientService from "@/services/patients";
 import EntryDetails from "./EntryDetails";
+import { Button } from "@mui/material";
+import FormEntry from "./FormEntry";
 
 export const PatientInfo = () => {
   const id = useParams().id;
   const [patient, setPatient] = useState<Patient | null>(null);
   const [diagnoses, setDiagnoses] = useState<Diagnose[]>([]);
+  const [show, setShow] = useState(false);
+
   useEffect(() => {
     const fetchDiagnoses = async () => {
       const fetchedDiagnoses = await patientService.getDiagnoses();
@@ -24,11 +28,18 @@ export const PatientInfo = () => {
   if (!patient) {
     return <div>Loading...</div>;
   }
-  const entryDiagnoses = patient.entries.map(entry => {
-    return entry.diagnosisCodes?.map(code => {
-      return diagnoses.find(diagnose => diagnose.code === code);
-    });
-  });
+  const handleShow = () => {
+    setShow(!show);
+  };
+  const toNewEntry = async (values: NewEntry) => {
+    const id = patient?.id;
+    try {
+      const newEntry = await patientService.createEntry(id, values);
+      setPatient({ ...patient, entries: [...patient.entries, newEntry] });
+    } catch (e) {
+      console.error(e.response.data);
+    }
+  };
   return (
     <div>
       <h1>{patient.name} <span>{patient.gender}</span></h1>
@@ -40,6 +51,8 @@ export const PatientInfo = () => {
           <EntryDetails key={entry.id} entry={entry} />
         );
       })}
+      <Button variant="contained" onClick={handleShow}>ADD NEW ENTRY</Button>
+      {show && <FormEntry toNewEntry={toNewEntry} setShow={setShow} diagnoses={diagnoses} />}
     </div >
   );
 }; 
