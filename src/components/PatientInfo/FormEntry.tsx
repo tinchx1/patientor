@@ -41,11 +41,34 @@ const FormEntry = ({ setShow, diagnoses, toNewEntry }: PropsFormEntry) => {
   const [formValues, setFormValues] = useState<FormEntryStates["entry"]>(baseState);
   console.log(formValues);
   const handleChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
-    const { name, value } = event.target;
-    setFormValues({
-      ...formValues,
-      [name as string]: value
-    });
+    let name = event.target.name;
+    const value = event.target.value;
+
+    if (name === 'startDate' || name === 'endDate') {
+      setFormValues({
+        ...formValues,
+        sickLeave: {
+          ...formValues.sickLeave,
+          [name]: value,
+        },
+      });
+    } else if (name === 'dateCriteria' || name === 'criteria') {
+      if (name === 'dateCriteria') {
+        name = 'date';
+      }
+      setFormValues({
+        ...formValues,
+        discharge: {
+          ...formValues.discharge,
+          [name]: value,
+        },
+      });
+    } else {
+      setFormValues({
+        ...formValues,
+        [name]: value,
+      });
+    }
   };
   const handleChangeType = (event: React.ChangeEvent<{ name?: string; value: unknown }>) => {
     const { name, value } = event.target;
@@ -173,6 +196,14 @@ const FormEntry = ({ setShow, diagnoses, toNewEntry }: PropsFormEntry) => {
                 </option>
               ))}
             </Select>
+            <FormControl>
+              <InputLabel htmlFor="sickLeave.startDate">sickLeave.startDate</InputLabel>
+              <Input onChange={handleChange} type="date" name="startDate" value={formValues.sickLeave?.startDate}></Input>
+            </FormControl>
+            <FormControl>
+              <InputLabel htmlFor="sickLeave.endDate">sickLeave.endDate</InputLabel>
+              <Input onChange={handleChange} type="date" name="endDate" value={formValues.sickLeave?.endDate}></Input>
+            </FormControl>
           </FormControl>
         </>
       )}
@@ -216,9 +247,12 @@ const FormEntry = ({ setShow, diagnoses, toNewEntry }: PropsFormEntry) => {
             </Select>
           </FormControl>
           <FormControl>
-            <InputLabel htmlFor="discharge">discharge</InputLabel>
             <InputLabel htmlFor="date">date</InputLabel>
-            <Input onChange={handleChange} type="date" name="date" value={formValues.discharge?.date}></Input>
+            <Input onChange={handleChange} type="date" name="dateCriteria" value={formValues.discharge?.date}></Input>
+          </FormControl>
+          <FormControl>
+            <InputLabel htmlFor="criteria">criteria</InputLabel>
+            <Input onChange={handleChange} name="criteria" value={formValues.discharge?.criteria}></Input>
           </FormControl>
         </>
       )}
